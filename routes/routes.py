@@ -1,14 +1,20 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint
+from services.services import login, register, listDatabases
 
-routes = Blueprint('routes', __name__)
+routes_bp = Blueprint('routes_bp', __name__)
 
-@routes.route('/')
+@routes_bp.route('/')
 def index():
     return 'Probando API'
 
-@routes.route('/login')
-def login():
-    data = request.json
-    if not data.get('username') or not data.get('password'):
-        return jsonify({'message': 'Todos los campos son requeridos'}), 400
+@routes_bp.route('/login', methods=['POST'])
+def login_router():
+    return login()
     
+@routes_bp.route('/register', methods=['POST'])
+def register_router():
+    return register()
+
+@routes_bp.route('/databases', methods=['GET'])
+def list_databases_route():
+    return listDatabases()
