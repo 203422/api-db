@@ -134,3 +134,28 @@ def p_error(p):
 
 # Construir el parser
 parser = yacc.yacc()
+
+
+def generateTokens(statement):
+    tokens = []
+    token_count = {'PR': 0, 'ID': 0, 'NUMBER': 0, 'SYM': 0}
+
+    try:
+
+        lexer.input(statement)
+        for token in lexer:
+            token_type = token.type
+            if token_type in reserved.values():
+                token_count['PR'] += 1
+            elif token_type == 'IDENTIFIER':
+                token_count['ID'] += 1
+            elif token_type == 'NUMBER':
+                token_count['NUMBER'] += 1
+            else:
+                token_count['SYM'] += 1
+            tokens.append({'type': token.type, 'value': token.value, 'lineno':token.lineno, 'lexpos':token.lexpos})
+
+    except SyntaxError as e:
+        print(e)
+
+    return tokens, token_count

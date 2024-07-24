@@ -2,7 +2,7 @@ from flask import jsonify, request
 from config.mongodb import mongo
 import bcrypt
 from bson.objectid import ObjectId
-from analyzer.analizer import parser, lexer
+from analyzer.analizer import parser, lexer, generateTokens
 
 def login():
     data = request.get_json()
@@ -45,7 +45,6 @@ def register():
 def listDatabases():
     client = mongo.cx
     databases = client.list_database_names()
-    print(databases)
     return jsonify({'databases':databases})
 
 def createDatabase():
@@ -55,16 +54,10 @@ def createDatabase():
         return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
 
     statement = data.get('statement')
-    print("Statement:", statement)
 
     try:
-        # Generacion de tokens
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
         return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
 
@@ -79,11 +72,10 @@ def createDatabase():
     if nameDatabase in client.list_database_names():
         return jsonify({'message': 'La base de datos ya existe'}), 400
 
-    # Crear una colección para crear efectivamente la base de datos
     db = client[nameDatabase]
     db.create_collection(collectionName)
 
-    return jsonify({'message': f'Base de datos "{nameDatabase}" y colección "{collectionName}" creadas exitosamente'}), 201
+    return jsonify({'message': f'Base de datos "{nameDatabase}" y colección "{collectionName}" creadas exitosamente', 'tokens':tokens, 'tokens_count':token_count}), 201
   
 def createCollection():
     data = request.get_json()
@@ -92,15 +84,10 @@ def createCollection():
         return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
 
     statement = data.get('statement')
-    print(statement)
 
     try:
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
         return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
     
@@ -123,7 +110,7 @@ def createCollection():
     db.create_collection(collectionName)
 
     if collectionName in db.list_collection_names():
-        return jsonify({'message': f'La colección "{collectionName}"  se ha creado exitosamente.'}) 
+        return jsonify({'message': f'La colección "{collectionName}"  se ha creado exitosamente.', 'tokens':tokens, 'tokens_count':token_count}) 
     else:
         return jsonify({'message': 'Hubo un problema al crear la coleccion'}), 500
 
@@ -131,26 +118,22 @@ def insertDocument():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
-    print("Statement:", statement)
 
     try:
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        print(result)
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
 
     if result['type'] != 'insert_document':
-        return jsonify({'message': 'Tipo de sentencia inválida para esta operación'}), 400
+        return jsonify({'message': 'Tipo de sentencia inválida para esta operación', 'tokens': [], 'tokens_count': {}}), 400
 
     db_name = result['db_name']
     collection_name = result['collection_name']
@@ -159,37 +142,38 @@ def insertDocument():
 
     db = client[db_name]
 
+    if db_name not in client.list_database_names():
+        return jsonify({'message': f'La base de datos "{db_name}" no existe', 'tokens': [], 'tokens_count': {}}), 400
+    
+    if collection_name not in db.list_collection_names():
+        return jsonify({'message': f'La colección "{collection_name}" no existe en la base de datos "{db_name}"', 'tokens': [], 'tokens_count': {}}), 400
+
     if not isinstance(document, dict):
-        return jsonify({'message': 'El documento no tiene la estructura adecuada'}), 400
+        return jsonify({'message': 'El documento no tiene la estructura adecuada', 'tokens': [], 'tokens_count': {}}), 400
 
     db[collection_name].insert_one(document)
 
-    return jsonify({'message': 'Documento insertado exitosamente'})
+    return jsonify({'message': 'Documento insertado exitosamente', 'tokens':tokens, 'tokens_count':token_count})
 
 def getDocuments():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
-    print("Statement:", statement)
 
     try:
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
 
     if result['type'] != 'get_documents':
-        return jsonify({'message': 'Tipo de sentencia inválida para esta operación'}), 400
+        return jsonify({'message': 'Tipo de sentencia inválida para esta operación', 'tokens': [], 'tokens_count': {}}), 400
 
     db_name = result['db_name']
     collection_name = result['collection_name']
@@ -203,32 +187,27 @@ def getDocuments():
         doc['_id'] = str(doc['_id'])
         result_docs.append(doc)
 
-    return jsonify(result_docs) 
+    return jsonify({'message': result_docs, 'tokens':tokens, 'tokens_count':token_count}) 
  
 def updateDocument():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
-    print("Statement:", statement)
 
     try:
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
 
     if result['type'] != 'update_document':
-        return jsonify({'message': 'Tipo de sentencia inválida para esta operación'}), 400
+        return jsonify({'message': 'Tipo de sentencia inválida para esta operación', 'tokens': [], 'tokens_count': {}}), 400
 
     db_name = result['db_name']
     collection_name = result['collection_name']
@@ -240,31 +219,26 @@ def updateDocument():
     result = db[collection_name].update_one(query, update)
 
     if result.matched_count > 0:
-        return jsonify({'message': 'Documento actualizado exitosamente'})
+        return jsonify({'message': 'Documento actualizado exitosamente', 'tokens':tokens, 'tokens_count':token_count})
     else:
-        return jsonify({'message': 'No se encontró ningún documento que coincida con la consulta'}), 404
+        return jsonify({'message': 'No se encontró ningún documento que coincida con la consulta', 'tokens': [], 'tokens_count': {}}), 404
     
 def deleteDocument():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
-    print(statement)
 
     try:
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
     
     if not result:
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
     
     db_name = result['db_name']
     collection_name = result['collection_name']
@@ -275,31 +249,27 @@ def deleteDocument():
     result = db[collection_name].delete_one(query)
 
     if result.deleted_count > 0:
-        return jsonify({'message': 'Documento eliminado exitosamente'})
+        return jsonify({'message': 'Documento eliminado exitosamente', 'tokens':tokens, 'tokens_count':token_count})
     else:
-        return jsonify({'message': 'No se encontró ningún documento que coincida con la consulta'}), 404
+        return jsonify({'message': 'No se encontró ningún documento que coincida con la consulta', 'tokens': [], 'tokens_count': {}}), 404
    
 def deleteCollection():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
-    print("Statement:", statement)
 
     try:
-        lexer.input(statement)
-        for token in lexer:
-            print(token)
-
+        
+        tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
-        print(result)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
 
     if not result or result['type'] != 'delete_collection':
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
 
     db_name = result['db_name']
     collection_name = result['collection_name']
@@ -308,12 +278,12 @@ def deleteCollection():
     db = client[db_name]
 
     if collection_name not in db.list_collection_names():
-        return jsonify({'message': f"La colección '{collection_name}' no existe en la base de datos '{db_name}'."}), 404
+        return jsonify({'message': f"La colección '{collection_name}' no existe en la base de datos '{db_name}'.", 'tokens': [], 'tokens_count': {}}), 404
 
     # Eliminar la colección
     db.drop_collection(collection_name)
     
-    return jsonify({'message': f"La colección '{collection_name}' se ha eliminado exitosamente de la base de datos '{db_name}'."})
+    return jsonify({'message': f"La colección '{collection_name}' se ha eliminado exitosamente de la base de datos '{db_name}'.", 'tokens':tokens, 'tokens_count':token_count})
 
 def encriptpass(password):
     pwd = password.encode('utf-8')
