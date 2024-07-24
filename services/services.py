@@ -81,7 +81,7 @@ def createCollection():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
 
@@ -89,10 +89,10 @@ def createCollection():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
     
     if not result:
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400 
     
     nameDatabase = result['db_name']
     collectionName = result['collection_name']
@@ -100,19 +100,19 @@ def createCollection():
     client = mongo.cx
 
     if nameDatabase not in client.list_database_names():
-        return jsonify({'message': 'La base de datos no existe'})
+        return jsonify({'message': 'La base de datos no existe', 'tokens': [], 'tokens_count': {}})
     
     db = client[nameDatabase]
 
     if collectionName in db.list_collection_names():
-        return jsonify({'message': 'La colección ya existe'})
+        return jsonify({'message': 'La colección ya existe', 'tokens': [], 'tokens_count': {}})
 
     db.create_collection(collectionName)
 
     if collectionName in db.list_collection_names():
         return jsonify({'message': f'La colección "{collectionName}"  se ha creado exitosamente.', 'tokens':tokens, 'tokens_count':token_count}) 
     else:
-        return jsonify({'message': 'Hubo un problema al crear la coleccion'}), 500
+        return jsonify({'message': 'Hubo un problema al crear la coleccion', 'tokens': [], 'tokens_count': {}}), 500
 
 def insertDocument():
     data = request.get_json()
