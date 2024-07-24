@@ -3,31 +3,102 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 Grammar
 
 Rule 0     S' -> statement
-Rule 1     statement -> CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER
+Rule 1     statement -> create_db
+Rule 2     statement -> create_collection
+Rule 3     statement -> insert_document
+Rule 4     statement -> get_documents
+Rule 5     statement -> update_document
+Rule 6     statement -> delete_document
+Rule 7     statement -> delete_collection
+Rule 8     create_db -> CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER
+Rule 9     create_collection -> CREATE COLLECTION IDENTIFIER INTO DATABASE IDENTIFIER
+Rule 10    insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE
+Rule 11    get_documents -> GET DOCUMENTS FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER
+Rule 12    update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+Rule 13    delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE
+Rule 14    delete_collection -> DELETE COLLECTION IDENTIFIER FROM DATABASE IDENTIFIER
+Rule 15    document -> STRING COLON value
+Rule 16    document -> document COMMA STRING COLON value
+Rule 17    value -> STRING
+Rule 18    value -> NUMBER
+Rule 19    value -> TRUE
+Rule 20    value -> FALSE
+Rule 21    value -> NULL
 
 Terminals, with rules where they appear
 
-COLLECTION           : 1
-CREATE               : 1
-DATABASE             : 1
-IDENTIFIER           : 1 1
-WITH                 : 1
+COLLECTION           : 8 9 10 11 12 13 14
+COLON                : 15 16
+COMMA                : 16
+CREATE               : 8 9
+DATABASE             : 8 9 10 11 12 13 14
+DELETE               : 13 14
+DOCUMENTS            : 11
+FALSE                : 20
+FROM                 : 11 13 14
+GET                  : 11
+IDENTIFIER           : 8 8 9 9 10 10 11 11 12 12 13 13 14 14
+INSERT               : 10
+INTO                 : 9 10
+LBRACE               : 10 12 12 13
+NULL                 : 21
+NUMBER               : 18
+RBRACE               : 10 12 12 13
+SET                  : 12
+STRING               : 15 16 17
+TRUE                 : 19
+UPDATE               : 12
+WHERE                : 12 13
+WITH                 : 8
 error                : 
 
 Nonterminals, with rules where they appear
 
+create_collection    : 2
+create_db            : 1
+delete_collection    : 7
+delete_document      : 6
+document             : 10 12 12 13 16
+get_documents        : 4
+insert_document      : 3
 statement            : 0
+update_document      : 5
+value                : 15 16
 
 Parsing method: LALR
 
 state 0
 
     (0) S' -> . statement
-    (1) statement -> . CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER
+    (1) statement -> . create_db
+    (2) statement -> . create_collection
+    (3) statement -> . insert_document
+    (4) statement -> . get_documents
+    (5) statement -> . update_document
+    (6) statement -> . delete_document
+    (7) statement -> . delete_collection
+    (8) create_db -> . CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER
+    (9) create_collection -> . CREATE COLLECTION IDENTIFIER INTO DATABASE IDENTIFIER
+    (10) insert_document -> . INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE
+    (11) get_documents -> . GET DOCUMENTS FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER
+    (12) update_document -> . UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+    (13) delete_document -> . DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE
+    (14) delete_collection -> . DELETE COLLECTION IDENTIFIER FROM DATABASE IDENTIFIER
 
-    CREATE          shift and go to state 2
+    CREATE          shift and go to state 9
+    INSERT          shift and go to state 10
+    GET             shift and go to state 11
+    UPDATE          shift and go to state 12
+    DELETE          shift and go to state 13
 
     statement                      shift and go to state 1
+    create_db                      shift and go to state 2
+    create_collection              shift and go to state 3
+    insert_document                shift and go to state 4
+    get_documents                  shift and go to state 5
+    update_document                shift and go to state 6
+    delete_document                shift and go to state 7
+    delete_collection              shift and go to state 8
 
 state 1
 
@@ -37,42 +108,569 @@ state 1
 
 state 2
 
-    (1) statement -> CREATE . DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER
+    (1) statement -> create_db .
 
-    DATABASE        shift and go to state 3
+    $end            reduce using rule 1 (statement -> create_db .)
 
 
 state 3
 
-    (1) statement -> CREATE DATABASE . IDENTIFIER WITH COLLECTION IDENTIFIER
+    (2) statement -> create_collection .
 
-    IDENTIFIER      shift and go to state 4
+    $end            reduce using rule 2 (statement -> create_collection .)
 
 
 state 4
 
-    (1) statement -> CREATE DATABASE IDENTIFIER . WITH COLLECTION IDENTIFIER
+    (3) statement -> insert_document .
 
-    WITH            shift and go to state 5
+    $end            reduce using rule 3 (statement -> insert_document .)
 
 
 state 5
 
-    (1) statement -> CREATE DATABASE IDENTIFIER WITH . COLLECTION IDENTIFIER
+    (4) statement -> get_documents .
 
-    COLLECTION      shift and go to state 6
+    $end            reduce using rule 4 (statement -> get_documents .)
 
 
 state 6
 
-    (1) statement -> CREATE DATABASE IDENTIFIER WITH COLLECTION . IDENTIFIER
+    (5) statement -> update_document .
 
-    IDENTIFIER      shift and go to state 7
+    $end            reduce using rule 5 (statement -> update_document .)
 
 
 state 7
 
-    (1) statement -> CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER .
+    (6) statement -> delete_document .
 
-    $end            reduce using rule 1 (statement -> CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER .)
+    $end            reduce using rule 6 (statement -> delete_document .)
+
+
+state 8
+
+    (7) statement -> delete_collection .
+
+    $end            reduce using rule 7 (statement -> delete_collection .)
+
+
+state 9
+
+    (8) create_db -> CREATE . DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER
+    (9) create_collection -> CREATE . COLLECTION IDENTIFIER INTO DATABASE IDENTIFIER
+
+    DATABASE        shift and go to state 14
+    COLLECTION      shift and go to state 15
+
+
+state 10
+
+    (10) insert_document -> INSERT . INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE
+
+    INTO            shift and go to state 16
+
+
+state 11
+
+    (11) get_documents -> GET . DOCUMENTS FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER
+
+    DOCUMENTS       shift and go to state 17
+
+
+state 12
+
+    (12) update_document -> UPDATE . DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+
+    DATABASE        shift and go to state 18
+
+
+state 13
+
+    (13) delete_document -> DELETE . FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE
+    (14) delete_collection -> DELETE . COLLECTION IDENTIFIER FROM DATABASE IDENTIFIER
+
+    FROM            shift and go to state 19
+    COLLECTION      shift and go to state 20
+
+
+state 14
+
+    (8) create_db -> CREATE DATABASE . IDENTIFIER WITH COLLECTION IDENTIFIER
+
+    IDENTIFIER      shift and go to state 21
+
+
+state 15
+
+    (9) create_collection -> CREATE COLLECTION . IDENTIFIER INTO DATABASE IDENTIFIER
+
+    IDENTIFIER      shift and go to state 22
+
+
+state 16
+
+    (10) insert_document -> INSERT INTO . DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE
+
+    DATABASE        shift and go to state 23
+
+
+state 17
+
+    (11) get_documents -> GET DOCUMENTS . FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER
+
+    FROM            shift and go to state 24
+
+
+state 18
+
+    (12) update_document -> UPDATE DATABASE . IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+
+    IDENTIFIER      shift and go to state 25
+
+
+state 19
+
+    (13) delete_document -> DELETE FROM . DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE
+
+    DATABASE        shift and go to state 26
+
+
+state 20
+
+    (14) delete_collection -> DELETE COLLECTION . IDENTIFIER FROM DATABASE IDENTIFIER
+
+    IDENTIFIER      shift and go to state 27
+
+
+state 21
+
+    (8) create_db -> CREATE DATABASE IDENTIFIER . WITH COLLECTION IDENTIFIER
+
+    WITH            shift and go to state 28
+
+
+state 22
+
+    (9) create_collection -> CREATE COLLECTION IDENTIFIER . INTO DATABASE IDENTIFIER
+
+    INTO            shift and go to state 29
+
+
+state 23
+
+    (10) insert_document -> INSERT INTO DATABASE . IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE
+
+    IDENTIFIER      shift and go to state 30
+
+
+state 24
+
+    (11) get_documents -> GET DOCUMENTS FROM . DATABASE IDENTIFIER COLLECTION IDENTIFIER
+
+    DATABASE        shift and go to state 31
+
+
+state 25
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER . COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+
+    COLLECTION      shift and go to state 32
+
+
+state 26
+
+    (13) delete_document -> DELETE FROM DATABASE . IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE
+
+    IDENTIFIER      shift and go to state 33
+
+
+state 27
+
+    (14) delete_collection -> DELETE COLLECTION IDENTIFIER . FROM DATABASE IDENTIFIER
+
+    FROM            shift and go to state 34
+
+
+state 28
+
+    (8) create_db -> CREATE DATABASE IDENTIFIER WITH . COLLECTION IDENTIFIER
+
+    COLLECTION      shift and go to state 35
+
+
+state 29
+
+    (9) create_collection -> CREATE COLLECTION IDENTIFIER INTO . DATABASE IDENTIFIER
+
+    DATABASE        shift and go to state 36
+
+
+state 30
+
+    (10) insert_document -> INSERT INTO DATABASE IDENTIFIER . COLLECTION IDENTIFIER LBRACE document RBRACE
+
+    COLLECTION      shift and go to state 37
+
+
+state 31
+
+    (11) get_documents -> GET DOCUMENTS FROM DATABASE . IDENTIFIER COLLECTION IDENTIFIER
+
+    IDENTIFIER      shift and go to state 38
+
+
+state 32
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION . IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+
+    IDENTIFIER      shift and go to state 39
+
+
+state 33
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER . COLLECTION IDENTIFIER WHERE LBRACE document RBRACE
+
+    COLLECTION      shift and go to state 40
+
+
+state 34
+
+    (14) delete_collection -> DELETE COLLECTION IDENTIFIER FROM . DATABASE IDENTIFIER
+
+    DATABASE        shift and go to state 41
+
+
+state 35
+
+    (8) create_db -> CREATE DATABASE IDENTIFIER WITH COLLECTION . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 42
+
+
+state 36
+
+    (9) create_collection -> CREATE COLLECTION IDENTIFIER INTO DATABASE . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 43
+
+
+state 37
+
+    (10) insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION . IDENTIFIER LBRACE document RBRACE
+
+    IDENTIFIER      shift and go to state 44
+
+
+state 38
+
+    (11) get_documents -> GET DOCUMENTS FROM DATABASE IDENTIFIER . COLLECTION IDENTIFIER
+
+    COLLECTION      shift and go to state 45
+
+
+state 39
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER . SET LBRACE document RBRACE WHERE LBRACE document RBRACE
+
+    SET             shift and go to state 46
+
+
+state 40
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION . IDENTIFIER WHERE LBRACE document RBRACE
+
+    IDENTIFIER      shift and go to state 47
+
+
+state 41
+
+    (14) delete_collection -> DELETE COLLECTION IDENTIFIER FROM DATABASE . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 48
+
+
+state 42
+
+    (8) create_db -> CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER .
+
+    $end            reduce using rule 8 (create_db -> CREATE DATABASE IDENTIFIER WITH COLLECTION IDENTIFIER .)
+
+
+state 43
+
+    (9) create_collection -> CREATE COLLECTION IDENTIFIER INTO DATABASE IDENTIFIER .
+
+    $end            reduce using rule 9 (create_collection -> CREATE COLLECTION IDENTIFIER INTO DATABASE IDENTIFIER .)
+
+
+state 44
+
+    (10) insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER . LBRACE document RBRACE
+
+    LBRACE          shift and go to state 49
+
+
+state 45
+
+    (11) get_documents -> GET DOCUMENTS FROM DATABASE IDENTIFIER COLLECTION . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 50
+
+
+state 46
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET . LBRACE document RBRACE WHERE LBRACE document RBRACE
+
+    LBRACE          shift and go to state 51
+
+
+state 47
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER . WHERE LBRACE document RBRACE
+
+    WHERE           shift and go to state 52
+
+
+state 48
+
+    (14) delete_collection -> DELETE COLLECTION IDENTIFIER FROM DATABASE IDENTIFIER .
+
+    $end            reduce using rule 14 (delete_collection -> DELETE COLLECTION IDENTIFIER FROM DATABASE IDENTIFIER .)
+
+
+state 49
+
+    (10) insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE . document RBRACE
+    (15) document -> . STRING COLON value
+    (16) document -> . document COMMA STRING COLON value
+
+    STRING          shift and go to state 54
+
+    document                       shift and go to state 53
+
+state 50
+
+    (11) get_documents -> GET DOCUMENTS FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER .
+
+    $end            reduce using rule 11 (get_documents -> GET DOCUMENTS FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER .)
+
+
+state 51
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE . document RBRACE WHERE LBRACE document RBRACE
+    (15) document -> . STRING COLON value
+    (16) document -> . document COMMA STRING COLON value
+
+    STRING          shift and go to state 54
+
+    document                       shift and go to state 55
+
+state 52
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE . LBRACE document RBRACE
+
+    LBRACE          shift and go to state 56
+
+
+state 53
+
+    (10) insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document . RBRACE
+    (16) document -> document . COMMA STRING COLON value
+
+    RBRACE          shift and go to state 57
+    COMMA           shift and go to state 58
+
+
+state 54
+
+    (15) document -> STRING . COLON value
+
+    COLON           shift and go to state 59
+
+
+state 55
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document . RBRACE WHERE LBRACE document RBRACE
+    (16) document -> document . COMMA STRING COLON value
+
+    RBRACE          shift and go to state 60
+    COMMA           shift and go to state 58
+
+
+state 56
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE . document RBRACE
+    (15) document -> . STRING COLON value
+    (16) document -> . document COMMA STRING COLON value
+
+    STRING          shift and go to state 54
+
+    document                       shift and go to state 61
+
+state 57
+
+    (10) insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE .
+
+    $end            reduce using rule 10 (insert_document -> INSERT INTO DATABASE IDENTIFIER COLLECTION IDENTIFIER LBRACE document RBRACE .)
+
+
+state 58
+
+    (16) document -> document COMMA . STRING COLON value
+
+    STRING          shift and go to state 62
+
+
+state 59
+
+    (15) document -> STRING COLON . value
+    (17) value -> . STRING
+    (18) value -> . NUMBER
+    (19) value -> . TRUE
+    (20) value -> . FALSE
+    (21) value -> . NULL
+
+    STRING          shift and go to state 63
+    NUMBER          shift and go to state 65
+    TRUE            shift and go to state 66
+    FALSE           shift and go to state 67
+    NULL            shift and go to state 68
+
+    value                          shift and go to state 64
+
+state 60
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE . WHERE LBRACE document RBRACE
+
+    WHERE           shift and go to state 69
+
+
+state 61
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document . RBRACE
+    (16) document -> document . COMMA STRING COLON value
+
+    RBRACE          shift and go to state 70
+    COMMA           shift and go to state 58
+
+
+state 62
+
+    (16) document -> document COMMA STRING . COLON value
+
+    COLON           shift and go to state 71
+
+
+state 63
+
+    (17) value -> STRING .
+
+    RBRACE          reduce using rule 17 (value -> STRING .)
+    COMMA           reduce using rule 17 (value -> STRING .)
+
+
+state 64
+
+    (15) document -> STRING COLON value .
+
+    RBRACE          reduce using rule 15 (document -> STRING COLON value .)
+    COMMA           reduce using rule 15 (document -> STRING COLON value .)
+
+
+state 65
+
+    (18) value -> NUMBER .
+
+    RBRACE          reduce using rule 18 (value -> NUMBER .)
+    COMMA           reduce using rule 18 (value -> NUMBER .)
+
+
+state 66
+
+    (19) value -> TRUE .
+
+    RBRACE          reduce using rule 19 (value -> TRUE .)
+    COMMA           reduce using rule 19 (value -> TRUE .)
+
+
+state 67
+
+    (20) value -> FALSE .
+
+    RBRACE          reduce using rule 20 (value -> FALSE .)
+    COMMA           reduce using rule 20 (value -> FALSE .)
+
+
+state 68
+
+    (21) value -> NULL .
+
+    RBRACE          reduce using rule 21 (value -> NULL .)
+    COMMA           reduce using rule 21 (value -> NULL .)
+
+
+state 69
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE . LBRACE document RBRACE
+
+    LBRACE          shift and go to state 72
+
+
+state 70
+
+    (13) delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE .
+
+    $end            reduce using rule 13 (delete_document -> DELETE FROM DATABASE IDENTIFIER COLLECTION IDENTIFIER WHERE LBRACE document RBRACE .)
+
+
+state 71
+
+    (16) document -> document COMMA STRING COLON . value
+    (17) value -> . STRING
+    (18) value -> . NUMBER
+    (19) value -> . TRUE
+    (20) value -> . FALSE
+    (21) value -> . NULL
+
+    STRING          shift and go to state 63
+    NUMBER          shift and go to state 65
+    TRUE            shift and go to state 66
+    FALSE           shift and go to state 67
+    NULL            shift and go to state 68
+
+    value                          shift and go to state 73
+
+state 72
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE . document RBRACE
+    (15) document -> . STRING COLON value
+    (16) document -> . document COMMA STRING COLON value
+
+    STRING          shift and go to state 54
+
+    document                       shift and go to state 74
+
+state 73
+
+    (16) document -> document COMMA STRING COLON value .
+
+    RBRACE          reduce using rule 16 (document -> document COMMA STRING COLON value .)
+    COMMA           reduce using rule 16 (document -> document COMMA STRING COLON value .)
+
+
+state 74
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document . RBRACE
+    (16) document -> document . COMMA STRING COLON value
+
+    RBRACE          shift and go to state 75
+    COMMA           shift and go to state 58
+
+
+state 75
+
+    (12) update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE .
+
+    $end            reduce using rule 12 (update_document -> UPDATE DATABASE IDENTIFIER COLLECTION IDENTIFIER SET LBRACE document RBRACE WHERE LBRACE document RBRACE .)
 

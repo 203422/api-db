@@ -31,7 +31,7 @@ def create_collection_route():
 def create_document_route():
     return insertDocument()
 
-@routes_bp.route('/get/documents', methods=['GET'])
+@routes_bp.route('/get/documents', methods=['POST'])
 def get_documents_route():
     return getDocuments()
 
