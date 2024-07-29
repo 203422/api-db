@@ -51,7 +51,7 @@ def createDatabase():
     data = request.get_json()
 
     if not data or not data.get('statement'):
-        return jsonify({'message': 'Es necesario proporcionar una sentencia'}), 400
+        return jsonify({'message': 'Es necesario proporcionar una sentencia', 'tokens': [], 'tokens_count': {}}), 400
 
     statement = data.get('statement')
 
@@ -59,18 +59,21 @@ def createDatabase():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}'}), 400
+        return jsonify({'message': str(e), 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
-        return jsonify({'message': 'Sentencia inválida'}), 400
+        return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
 
     nameDatabase = result['db_name']
     collectionName = result['collection_name']
 
+    if nameDatabase in ('nombre_db') or collectionName in ('nombre_colección'):
+        return jsonify({'message': 'Es necesario el nombre de la base de datos y la colección', 'tokens': [], 'tokens_count': {}}), 400
+
     client = mongo.cx
 
     if nameDatabase in client.list_database_names():
-        return jsonify({'message': 'La base de datos ya existe'}), 400
+        return jsonify({'message': 'La base de datos ya existe', 'tokens': [], 'tokens_count': {}}), 400
 
     db = client[nameDatabase]
     db.create_collection(collectionName)
@@ -89,13 +92,16 @@ def createCollection():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
+        return jsonify({'message':  str(e), 'tokens': [], 'tokens_count': {}}), 400
     
     if not result:
         return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400 
     
     nameDatabase = result['db_name']
     collectionName = result['collection_name']
+
+    if nameDatabase in ('nombre_db') or collectionName in ('nombre_colección'):
+        return jsonify({'message': 'Es necesario el nombre de la base de datos y la colección', 'tokens': [], 'tokens_count': {}}), 400
 
     client = mongo.cx
 
@@ -126,7 +132,7 @@ def insertDocument():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
+        return jsonify({'message': str(e), 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
         print(result)
@@ -167,7 +173,7 @@ def getDocuments():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
+        return jsonify({'message': str(e), 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
         return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
@@ -177,9 +183,22 @@ def getDocuments():
 
     db_name = result['db_name']
     collection_name = result['collection_name']
+
+    if db_name in ('nombre_db') or collection_name in ('nombre_colección'):
+        return jsonify({'message': 'Es necesario el nombre de la base de datos y la colección', 'tokens': [], 'tokens_count': {}}), 400
+
     client = mongo.cx
 
+    # Verificar si la base de datos existe
+    if db_name not in client.list_database_names():
+        return jsonify({'message': 'La base de datos no existe', 'tokens': [], 'tokens_count': {}}), 400
+
     db = client[db_name]
+
+    # Verificar si la colección existe
+    if collection_name not in db.list_collection_names():
+        return jsonify({'message': 'La colección no existe en la base de datos', 'tokens': [], 'tokens_count': {}}), 400
+
     documents = db[collection_name].find()
 
     result_docs = []
@@ -187,7 +206,11 @@ def getDocuments():
         doc['_id'] = str(doc['_id'])
         result_docs.append(doc)
 
-    return jsonify({'message': result_docs, 'tokens':tokens, 'tokens_count':token_count}) 
+    if not result_docs:
+        return jsonify({'message': 'No hay documentos', 'tokens': tokens, 'tokens_count': token_count}), 200
+    
+    
+    return jsonify({'message': result_docs, 'tokens': tokens, 'tokens_count': token_count})
  
 def updateDocument():
     data = request.get_json()
@@ -201,7 +224,7 @@ def updateDocument():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
+        return jsonify({'message': str(e), 'tokens': [], 'tokens_count': {}}), 400
 
     if not result:
         return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
@@ -216,6 +239,13 @@ def updateDocument():
     client = mongo.cx
 
     db = client[db_name]
+
+    if db_name not in client.list_database_names():
+        return jsonify({'message': f'La base de datos "{db_name}" no existe', 'tokens': [], 'tokens_count': {}}), 400
+    
+    if collection_name not in db.list_collection_names():
+        return jsonify({'message': f'La colección "{collection_name}" no existe en la base de datos "{db_name}"', 'tokens': [], 'tokens_count': {}}), 400
+
     result = db[collection_name].update_one(query, update)
 
     if result.matched_count > 0:
@@ -235,7 +265,7 @@ def deleteDocument():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
+        return jsonify({'message': str(e), 'tokens': [], 'tokens_count': {}}), 400
     
     if not result:
         return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
@@ -246,6 +276,13 @@ def deleteDocument():
     client = mongo.cx
 
     db = client[db_name]
+    
+    if db_name not in client.list_database_names():
+        return jsonify({'message': f'La base de datos "{db_name}" no existe', 'tokens': [], 'tokens_count': {}}), 400
+    
+    if collection_name not in db.list_collection_names():
+        return jsonify({'message': f'La colección "{collection_name}" no existe en la base de datos "{db_name}"', 'tokens': [], 'tokens_count': {}}), 400
+    
     result = db[collection_name].delete_one(query)
 
     if result.deleted_count > 0:
@@ -266,13 +303,17 @@ def deleteCollection():
         tokens, token_count = generateTokens(statement)
         result = parser.parse(statement)
     except Exception as e:
-        return jsonify({'message': f'Error en la sentencia: {str(e)}', 'tokens': [], 'tokens_count': {}}), 400
+        return jsonify({'message': str(e), 'tokens': [], 'tokens_count': {}}), 400
 
     if not result or result['type'] != 'delete_collection':
         return jsonify({'message': 'Sentencia inválida', 'tokens': [], 'tokens_count': {}}), 400
 
     db_name = result['db_name']
     collection_name = result['collection_name']
+
+    if db_name in ('nombre_db') or collection_name in ('nombre_colección'):
+        return jsonify({'message': 'Es necesario el nombre de la base de datos y la colección', 'tokens': [], 'tokens_count': {}}), 400
+    
     client = mongo.cx
 
     db = client[db_name]

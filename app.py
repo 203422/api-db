@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import os 
 
-
 from config.mongodb import mongo
 from routes.routes import routes_bp
 

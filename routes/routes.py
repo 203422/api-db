@@ -1,6 +1,5 @@
 from flask import Blueprint
 from services.services import login, register, listDatabases, createDatabase, createCollection, insertDocument, getDocuments, updateDocument, deleteDocument, deleteCollection
-
 routes_bp = Blueprint('routes_bp', __name__)
 
 @routes_bp.route('/')
