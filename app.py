@@ -7,6 +7,7 @@ from config.mongodb import mongo
 from routes.routes import routes_bp
 
 load_dotenv()
+print("MONGO_URI:", os.getenv('MONGO_URI'))
 
 app = Flask(__name__)
 CORS(app)
