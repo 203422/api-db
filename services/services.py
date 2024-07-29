@@ -3,6 +3,9 @@ from config.mongodb import mongo
 import bcrypt
 from bson.objectid import ObjectId
 from analyzer.analizer import parser, lexer, generateTokens
+import logging
+
+logging.basicConfig(filename='app.log', level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def login():
     try:
@@ -15,14 +18,14 @@ def login():
 
         db = mongo.cx['usersproject']
         user = db.users.find_one({'username': username})
-        
+
         if user and bcrypt.checkpw(password, user['password']):
             return jsonify({'message': 'Sesión iniciada'}), 200
         else:
             return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
     except Exception as e:
-            print(f'Error en login: {e}')
-            return 'Error en el servidor', 500
+        logging.error(f'Error en login: {e}')
+        return jsonify({'error': 'Error en el servidor'}), 500
 
 def register():
     data = request.get_json()
