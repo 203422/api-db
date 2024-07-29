@@ -4,6 +4,7 @@ routes_bp = Blueprint('routes_bp', __name__)
 
 @routes_bp.route('/')
 def index():
+    print('PROBANDO')
     return 'Probando API'
 
 @routes_bp.route('/login', methods=['POST'])
