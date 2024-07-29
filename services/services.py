@@ -5,20 +5,24 @@ from bson.objectid import ObjectId
 from analyzer.analizer import parser, lexer, generateTokens
 
 def login():
-    data = request.get_json()
-    if not data.get('username') or not data.get('password'):
-        return jsonify({'message': 'Todos los campos son requeridos'}), 400
-    
-    username = data.get('username')
-    password = data.get('password').encode('utf-8')
+    try:
+        data = request.get_json()
+        if not data.get('username') or not data.get('password'):
+            return jsonify({'message': 'Todos los campos son requeridos'}), 400
+        
+        username = data.get('username')
+        password = data.get('password').encode('utf-8')
 
-    db = mongo.cx['usersproject']
-    user = db.users.find_one({'username': username})
-    
-    if user and bcrypt.checkpw(password, user['password']):
-        return jsonify({'message': 'Sesión iniciada'}), 200
-    else:
-        return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
+        db = mongo.cx['usersproject']
+        user = db.users.find_one({'username': username})
+        
+        if user and bcrypt.checkpw(password, user['password']):
+            return jsonify({'message': 'Sesión iniciada'}), 200
+        else:
+            return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
+    except Exception as e:
+            print(f'Error en login: {e}')
+            return 'Error en el servidor', 500
 
 def register():
     data = request.get_json()
@@ -276,7 +280,7 @@ def deleteDocument():
     client = mongo.cx
 
     db = client[db_name]
-    
+
     if db_name not in client.list_database_names():
         return jsonify({'message': f'La base de datos "{db_name}" no existe', 'tokens': [], 'tokens_count': {}}), 400
     
