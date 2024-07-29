@@ -16,6 +16,13 @@ app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 mongo.init_app(app)
 
 app.register_blueprint(routes_bp)
+@app.route('/test')
+def test():
+    try:
+        db = mongo.db
+        return 'Conexión a MongoDB exitosa'
+    except Exception as e:
+        return f'Error de conexión: {e}'
 
 if __name__ == '__main__':
     app.run(debug=True)
