@@ -5,10 +5,9 @@ from bson.objectid import ObjectId
 from analyzer.analizer import parser, lexer, generateTokens
 import logging
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# logging.basicConfig(filename='app.log', level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def login():
-    try:
         data = request.get_json()
         if not data.get('username') or not data.get('password'):
             return jsonify({'message': 'Todos los campos son requeridos'}), 400
@@ -23,9 +22,7 @@ def login():
             return jsonify({'message': 'Sesión iniciada'}), 200
         else:
             return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
-    except Exception as e:
-        logging.error(f'Error en login: {e}')
-        return jsonify({'error': 'Error en el servidor'}), 500
+
 
 def register():
     data = request.get_json()
